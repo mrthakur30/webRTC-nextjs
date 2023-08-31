@@ -124,7 +124,7 @@ export default function Screen() {
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6'>
             { myStream && <h1 className="text-5xl">Your Stream</h1>}
-            { myStream &&  <ReactPlayer playing  height='250px' width='250px' url={myStream} /> }
+            { myStream &&  <ReactPlayer playing muted height='250px' width='250px' url={myStream} /> }
           </div>
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6 '>
