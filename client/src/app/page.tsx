@@ -10,6 +10,13 @@ interface UserProps{
    room : string
 }
 
+
+type MySocketType = {
+  emit(event: string, data: any): void;
+  on(event: string, handler: (data: any) => void): void;
+  off(event: string, handler: (data: any) => void): void;
+};
+
 export default function Home() {
   const [name, setName] = useState('');
   const [room, setRoom] = useState('');
@@ -18,7 +25,7 @@ export default function Home() {
   const router = useRouter();
 
 
-  const socket = useSocket();
+  const socket: MySocketType = useSocket() as MySocketType;
   const submitFormHandler = useCallback((e: any) => {
     e.preventDefault();
     socket.emit('room:join', {

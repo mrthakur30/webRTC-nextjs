@@ -4,11 +4,19 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ReactPlayer from 'react-player';
 import peer from '@/service/peer';
 
+type MySocketType = {
+  emit(event: string, data: any): void;
+  on(event: string, handler: (data: any) => void): void;
+  off(event: string, handler: (data: any) => void): void;
+};
+
+
 export default function Screen() {
-  const socket = useSocket();
-  const [remoteSocketId, setRemoteSocketId] = useState(null);
-  const [myStream, setMyStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
+  const socket: MySocketType = useSocket() as MySocketType;
+ 
+  const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
+  const [myStream, setMyStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const handleCallUser = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -25,7 +33,7 @@ export default function Screen() {
     setRemoteSocketId(props.id);
   }, []);
 
-  const handleIncomingCall = useCallback( async ({ from, offer }) => {
+  const handleIncomingCall = useCallback(async ({ from, offer }: any) => {
     setRemoteSocketId(from);
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -37,21 +45,23 @@ export default function Screen() {
     socket.emit('call:accepted', { to: from, ans });
 
   }, [socket]);
-  
-  
-  const  sendStream = useCallback(() =>{
-    for (const track of myStream.getTracks()) {
-      peer.peer.addTrack(track, myStream);
-    }
-  },[myStream])
 
-  const handleCallAccepted = useCallback(({  ans }) => {
+  const sendStream = useCallback(() => {
+    if (myStream) {
+      for (const track of myStream.getTracks()) {
+        peer.peer && peer.peer.addTrack(track, myStream);
+      }
+    }
+
+  }, [myStream])
+
+  const handleCallAccepted = useCallback(({ ans }: any) => {
     peer.setLocalDescription(ans);
     console.log("call accepted");
     sendStream();
   }, [sendStream]);
 
-  const handleNegotiationIncoming = useCallback( async ({ from, offer }) => {
+  const handleNegotiationIncoming = useCallback(async ({ from, offer }: any) => {
     const ans = await peer.getAnswer(offer);
     socket.emit('peer:nego:done', { to: from, ans })
   }, [socket]);
@@ -61,22 +71,25 @@ export default function Screen() {
     socket.emit('peer:nego:needed', { offer, to: remoteSocketId });
   }, [remoteSocketId, socket]);
 
-  const handleNegotiationFinal = useCallback(async ({ans}) => {
-     await peer.setLocalDescription(ans);
-  }, []);
-
-useEffect(() => {
-    peer.peer.addEventListener("track", async (ev : any) => {
-      const remoteStream =  ev.streams;
-      console.log("GOT TRACKS!!");
-      setRemoteStream(remoteStream[0]);
-    });
+  const handleNegotiationFinal = useCallback(async ({ ans }: any) => {
+    await peer.setLocalDescription(ans);
   }, []);
 
   useEffect(() => {
-    peer.peer.addEventListener('negotiationneeded', handleNegotiationNeeded)
+    if (peer.peer) {
+      peer.peer.addEventListener("track", async (ev: any) => {
+        const remoteStream = ev.streams;
+        console.log("GOT TRACKS!!");
+        setRemoteStream(remoteStream[0]);
+      });
+    }
+
+  }, []);
+
+  useEffect(() => {
+    peer.peer && peer.peer.addEventListener('negotiationneeded', handleNegotiationNeeded)
     return () => {
-      peer.peer.removeEventListener('negotiationneeded', handleNegotiationNeeded);
+      peer.peer && peer.peer.removeEventListener('negotiationneeded', handleNegotiationNeeded);
     }
   }, [handleNegotiationNeeded])
 
@@ -97,6 +110,7 @@ useEffect(() => {
     }
   }, [socket, handleUserJoined, handleIncomingCall, handleCallAccepted, handleNegotiationIncoming, handleNegotiationFinal]);
 
+  
   return (
     <div className="min-h-screen flex flex-col gap-6 items-center pt-10">
       <h1 className="text-5xl">Your Screen</h1>
@@ -106,24 +120,24 @@ useEffect(() => {
         <button onClick={handleCallUser}>CALL </button>
       }
 
-      <div className='flex gap-5'> 
-      { 
-        myStream && 
-        <div className='flex flex-col'>
-         <h1 className="text-5xl">Your Stream</h1>
-        <ReactPlayer playing muted height='400px' weight='600' url={myStream} />
-        </div>
-      }
+      <div className='flex gap-5'>
+        {
+          myStream &&
+          <div className='flex flex-col'>
+            <h1 className="text-5xl">Your Stream</h1>
+            <ReactPlayer playing muted height='400px' weight='600' url={myStream} />
+          </div>
+        }
 
-      {
-        remoteStream && 
-        <div className='flex gap-5'> 
-        <h1 className="text-5xl">Remote Stream</h1>
-        <ReactPlayer playing muted height='=400px' weight='600' url={remoteStream} />
-        </div>
-      }
+        {
+          remoteStream &&
+          <div className='flex gap-5'>
+            <h1 className="text-5xl">Remote Stream</h1>
+            <ReactPlayer playing muted height='=400px' weight='600' url={remoteStream} />
+          </div>
+        }
       </div>
-    
+
     </div>
   );
 }

@@ -1,12 +1,14 @@
 'use client'
 import React, { createContext, useContext, useMemo } from 'react';
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 
-const SocketContext = createContext(null);
+const SocketContext = createContext<Socket | null>(null);
 
-
-export const useSocket = () => {
+export const useSocket = (): Socket | null => {
   const socket = useContext(SocketContext);
+  if (socket === null) {
+    throw new Error('useSocket must be used within a SocketProvider');
+  }
   return socket;
 };
 
@@ -14,12 +16,12 @@ interface SocketProviderProps {
   children: React.ReactNode;
 }
 
-export const SocketProvider: React.FC<SocketProviderProps> = (props) => {
-  const  socket = useMemo(() => io('https://webrtc-backend-ja48.onrender.com'),[]);
+export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
+  const socket = useMemo(() => io('https://webrtc-backend-ja48.onrender.com'), []);
 
   return (
     <SocketContext.Provider value={socket}>
-      {props.children}
+      {children}
     </SocketContext.Provider>
   );
 };
