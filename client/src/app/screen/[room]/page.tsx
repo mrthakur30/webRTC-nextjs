@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ReactPlayer from 'react-player';
 import peer from '@/service/peer';
 
-export default function page() {
+export default function Screen() {
   const socket = useSocket();
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [myStream, setMyStream] = useState(null);
