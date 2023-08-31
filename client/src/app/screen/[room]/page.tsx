@@ -120,16 +120,16 @@ export default function Screen() {
         <button onClick={handleCallUser}>CALL </button>
       }
 
-      <div className='md:flex-row flex flex-col gap-5'>
+      <div className='md:flex'>
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6'>
             { myStream && <h1 className="text-5xl">Your Stream</h1>}
-            { myStream &&  <ReactPlayer playing  height='80%' weight='80%' url={myStream} /> }
+            { myStream &&  <ReactPlayer playing  height='80%' width='80%' url={myStream} /> }
           </div>
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6 '>
            {remoteStream && <h1 className="text-5xl">Remote Stream</h1>}
-           {remoteStream && <ReactPlayer playing  height='80%' weight='80%' url={remoteStream} /> }
+           {remoteStream && <ReactPlayer playing  height='80%' width='80%' url={remoteStream} /> }
           </div>
       
       </div>
