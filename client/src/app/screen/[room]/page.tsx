@@ -124,12 +124,12 @@ export default function Screen() {
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6'>
             { myStream && <h1 className="text-5xl">Your Stream</h1>}
-            { myStream &&  <ReactPlayer playing  height='80%' width='80%' url={myStream} /> }
+            { myStream &&  <ReactPlayer playing  height='250px' width='250px' url={myStream} /> }
           </div>
       
           <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6 '>
            {remoteStream && <h1 className="text-5xl">Remote Stream</h1>}
-           {remoteStream && <ReactPlayer playing  height='80%' width='80%' url={remoteStream} /> }
+           {remoteStream && <ReactPlayer playing  height='250px' width='250px' url={remoteStream} /> }
           </div>
       
       </div>
