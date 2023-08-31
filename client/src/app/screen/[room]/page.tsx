@@ -13,7 +13,7 @@ type MySocketType = {
 
 export default function Screen() {
   const socket: MySocketType = useSocket() as MySocketType;
- 
+
   const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
   const [myStream, setMyStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -110,30 +110,31 @@ export default function Screen() {
     }
   }, [socket, handleUserJoined, handleIncomingCall, handleCallAccepted, handleNegotiationIncoming, handleNegotiationFinal]);
 
-  
+
   return (
     <div className="min-h-screen flex flex-col gap-6 items-center pt-10">
       <h1 className="text-5xl">Your Screen</h1>
-      <h1 className="text-xl">{remoteSocketId ? 'Connected' : 'No one in room'}</h1>
-      {myStream && <button onClick={sendStream}>Send Stream</button>}
+      <h1 className="text-xl text-green-500">{remoteSocketId ? 'Connected' : 'No one in room'}</h1>
+      {myStream && <button className='px-6 py-2 bg-opacity-80 border-gray-300 rounded-3xl text-slate-950 transition-colors bg-white border-2 hover:bg-slate-900 hover:text-white' onClick={sendStream}>Send Stream</button>}
       {remoteSocketId &&
-        <button onClick={handleCallUser}>CALL </button>
+        <button className='px-6 py-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-950 transition-colors bg-white  hover:bg-slate-900 hover:text-white' onClick={handleCallUser}>CALL </button>
       }
 
-      <div className='md:flex'>
-      
-          <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6'>
-            { myStream && <h1 className="text-5xl">Your Stream</h1>}
-            { myStream &&  <ReactPlayer playing muted height='250px' width='250px' url={myStream} /> }
-          </div>
-      
-          <div className='flex flex-col justify-center items-center border-2 border-white rounded-md p-6 '>
-           {remoteStream && <h1 className="text-5xl">Remote Stream</h1>}
-           {remoteStream && <ReactPlayer playing  height='250px' width='250px' url={remoteStream} /> }
-          </div>
-      
+      <div className=' relative'>
+
+        <div className='flex flex-col justify-center items-center absolute  right-8 bottom-8 '>
+          {/* {myStream && <h1 className="text-5xl">Your Stream</h1>} */}
+          {myStream && <ReactPlayer playing muted height='120px' width='150px' url={myStream} />}
+        </div>
+
+        <div className='flex flex-col justify-center items-center border border-slate-400 rounded-sm p-6 '>
+          {/* {remoteStream && <h1 className="text-5xl">Remote Stream</h1>} */}
+          {remoteStream && <ReactPlayer playing height='600px' width='800px' url={remoteStream} />}
+        </div>
+
       </div>
 
     </div>
+
   );
 }
