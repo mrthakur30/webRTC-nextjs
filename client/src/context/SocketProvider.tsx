@@ -15,7 +15,7 @@ interface SocketProviderProps {
 }
 
 export const SocketProvider: React.FC<SocketProviderProps> = (props) => {
-  const  socket = useMemo(() => io('localhost:8000'),[]);
+  const  socket = useMemo(() => io('https://webrtc-backend-ja48.onrender.com'),[]);
 
   return (
     <SocketContext.Provider value={socket}>
