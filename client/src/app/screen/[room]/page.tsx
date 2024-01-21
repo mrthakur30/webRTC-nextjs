@@ -23,6 +23,30 @@ export default function Screen(props: any) {
   const [audio, setAudio] = useState<boolean>(true);
   const [video, setVideo] = useState<boolean>(true);
   const router = useRouter();
+  const [isPhone, setIsPhone] = useState(false);
+
+  const updateScreenSize = () => {
+    const screenWidth = window.innerWidth;
+
+    console.log(`Screen Width: ${screenWidth}`);
+
+    if (screenWidth <= 768) {
+      setIsPhone(true);
+    } else {
+      setIsPhone(false);
+    }
+  };
+
+  useEffect(() => {
+    updateScreenSize();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', updateScreenSize);
+    return () => {
+      window.removeEventListener('resize', updateScreenSize);
+    };
+  }, []); 
 
 
 
@@ -146,28 +170,28 @@ export default function Screen(props: any) {
 
 
   return (
-    <div className="min-h-screen flex flex-col gap-6 items-center pt-10">
+    <div className=" min-h-screen  min-w-screen  polka flex flex-col gap-6 items-center pt-10">
 
       <h1 className="text-xl text-green-500">{remoteSocketId ? 'Connected' : 'No one in room'}</h1>
 
       {!isConnected && <Snippet variant="solid" color="primary">{roomId}</Snippet>}
 
-      {<div className='flex flex-row-reverse gap-8'>
+      {<div className='flex  flex-row-reverse gap-8'>
         {remoteSocketId &&
           <button className='px-6 py-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-950 transition-colors bg-white  hover:bg-slate-900 hover:text-white' onClick={handleCallUser}>CALL </button>
         }
       </div>}
 
-      <div className='relative'>
+      <div className='relative overflow-clip md:w-screen w-full h-full  '>
         {
           (myStream && remoteStream) &&
           <>
-            <div className='flex flex-col justify-center items-center absolute  border-slate-100 rounded-sm  border-2 right-8 bottom-8 '>
-              <ReactPlayer playing muted height='120px' width='150px' url={myStream} />
+            <div className='flex flex-col justify-center items-center absolute  rounded-sm  md:right-20 right-0 bottom-6 '>
+              <ReactPlayer playing muted height={isPhone ?70: 150 } width={isPhone ?120 : 220 }  url={myStream} />
             </div>
 
-            <div className='flex flex-col justify-center items-center  border-slate-200 rounded-sm  border-4'>
-              <ReactPlayer playing height='600px' width='800px' url={remoteStream} />
+            <div className='flex flex-col justify-center items-center  md:border-slate-200 rounded-sm  md:border-4'>
+              <ReactPlayer playing height={isPhone ?400: 500 } width={isPhone ?500 : 800 } url={remoteStream} />
             </div>
           </>
         }
