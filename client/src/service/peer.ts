@@ -1,9 +1,13 @@
 class PeerService {
-  peer: RTCPeerConnection | null = null;
+  peer: RTCPeerConnection | null;
 
   constructor() {
-    if (!this.peer) {
-      this.peer = new RTCPeerConnection({
+    this.peer = this.createPeerConnection();
+  }
+
+  private createPeerConnection(): RTCPeerConnection | null {
+    try {
+      return new RTCPeerConnection({
         iceServers: [
           {
             urls: [
@@ -13,31 +17,47 @@ class PeerService {
           },
         ],
       });
+    } catch (error) {
+      console.error("Error creating RTCPeerConnection:", error);
+      return null;
     }
   }
 
   async getAnswer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit | undefined> {
     if (this.peer) {
-      await this.peer.setRemoteDescription(new RTCSessionDescription(offer));
-      const ans = await this.peer.createAnswer();
-      await this.peer.setLocalDescription(new RTCSessionDescription(ans));
-      return ans;
+      try {
+        await this.peer.setRemoteDescription(new RTCSessionDescription(offer));
+        const ans = await this.peer.createAnswer();
+        await this.peer.setLocalDescription(new RTCSessionDescription(ans));
+        return ans;
+      } catch (error) {
+        console.error("Error creating answer:", error);
+      }
     }
   }
 
   async setLocalDescription(ans: RTCSessionDescriptionInit): Promise<void> {
     if (this.peer) {
-      await this.peer.setRemoteDescription(new RTCSessionDescription(ans));
+      try {
+        await this.peer.setRemoteDescription(new RTCSessionDescription(ans));
+      } catch (error) {
+        console.error("Error setting local description:", error);
+      }
     }
   }
 
   async getOffer(): Promise<RTCSessionDescriptionInit | undefined> {
     if (this.peer) {
-      const offer = await this.peer.createOffer();
-      await this.peer.setLocalDescription(new RTCSessionDescription(offer));
-      return offer;
+      try {
+        const offer = await this.peer.createOffer();
+        await this.peer.setLocalDescription(new RTCSessionDescription(offer));
+        return offer;
+      } catch (error) {
+        console.error("Error creating offer:", error);
+      }
     }
   }
 }
 
-export default new PeerService();
+const peerServiceInstance = new PeerService();
+export default peerServiceInstance;

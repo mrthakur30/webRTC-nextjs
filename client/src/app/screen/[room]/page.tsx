@@ -1,8 +1,11 @@
 'use client'
 import { useSocket } from '@/context/SocketProvider'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ReactPlayer from 'react-player';
 import peer from '@/service/peer';
+import { Snippet } from "@nextui-org/react";
+import { useRouter } from 'next/navigation';
+import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
 
 type MySocketType = {
   emit(event: string, data: any): void;
@@ -11,12 +14,23 @@ type MySocketType = {
 };
 
 
-export default function Screen() {
+export default function Screen(props: any) {
   const socket: MySocketType = useSocket() as MySocketType;
-
+  const roomId = props.params.room;
   const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
   const [myStream, setMyStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [audio, setAudio] = useState<boolean>(true);
+  const [video, setVideo] = useState<boolean>(true);
+  const router = useRouter();
+
+
+
+  // useEffect(()=>{},[audio,video])
+
+  const isConnected = useMemo(() => {
+    return (myStream && remoteStream)
+  }, [remoteStream, myStream])
 
   const handleCallUser = useCallback(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -28,9 +42,11 @@ export default function Screen() {
     setMyStream(stream);
   }, [remoteSocketId, socket]);
 
-  const handleUserJoined = useCallback((props: any) => {
+
+  const handleUserJoined = useCallback(async (props: any) => {
     console.log(props);
-    setRemoteSocketId(props.id);
+    const { participantId } = props
+    setRemoteSocketId(participantId);
   }, []);
 
   const handleIncomingCall = useCallback(async ({ from, offer }: any) => {
@@ -52,7 +68,6 @@ export default function Screen() {
         peer.peer && peer.peer.addTrack(track, myStream);
       }
     }
-
   }, [myStream])
 
   const handleCallAccepted = useCallback(({ ans }: any) => {
@@ -74,6 +89,25 @@ export default function Screen() {
   const handleNegotiationFinal = useCallback(async ({ ans }: any) => {
     await peer.setLocalDescription(ans);
   }, []);
+
+
+  const endCall = async () => {
+
+    if (myStream) {
+      for (const track of myStream.getTracks()) {
+        track.stop();
+      }
+      setMyStream(null);
+    }
+
+    if (remoteStream) {
+      for (const track of remoteStream.getTracks()) {
+        track.stop();
+      }
+      setRemoteStream(null);
+    }
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     if (peer.peer) {
@@ -113,28 +147,38 @@ export default function Screen() {
 
   return (
     <div className="min-h-screen flex flex-col gap-6 items-center pt-10">
-      <h1 className="text-5xl">Your Screen</h1>
+
       <h1 className="text-xl text-green-500">{remoteSocketId ? 'Connected' : 'No one in room'}</h1>
-      {myStream && <button className='px-6 py-2 bg-opacity-80 border-gray-300 rounded-3xl text-slate-950 transition-colors bg-white border-2 hover:bg-slate-900 hover:text-white' onClick={sendStream}>Send Stream</button>}
-      {remoteSocketId &&
-        <button className='px-6 py-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-950 transition-colors bg-white  hover:bg-slate-900 hover:text-white' onClick={handleCallUser}>CALL </button>
-      }
 
-      <div className=' relative'>
+      {!isConnected && <Snippet variant="solid" color="primary">{roomId}</Snippet>}
 
-        <div className='flex flex-col justify-center items-center absolute  right-8 bottom-8 '>
-          {/* {myStream && <h1 className="text-5xl">Your Stream</h1>} */}
-          {myStream && <ReactPlayer playing muted height='120px' width='150px' url={myStream} />}
-        </div>
+      {<div className='flex flex-row-reverse gap-8'>
+        {remoteSocketId &&
+          <button className='px-6 py-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-950 transition-colors bg-white  hover:bg-slate-900 hover:text-white' onClick={handleCallUser}>CALL </button>
+        }
+      </div>}
 
-        <div className='flex flex-col justify-center items-center border border-slate-400 rounded-sm p-6 '>
-          {/* {remoteStream && <h1 className="text-5xl">Remote Stream</h1>} */}
-          {remoteStream && <ReactPlayer playing height='600px' width='800px' url={remoteStream} />}
-        </div>
+      <div className='relative'>
+        {
+          (myStream && remoteStream) &&
+          <>
+            <div className='flex flex-col justify-center items-center absolute  border-slate-100 rounded-sm  border-2 right-8 bottom-8 '>
+              <ReactPlayer playing muted height='120px' width='150px' url={myStream} />
+            </div>
 
+            <div className='flex flex-col justify-center items-center  border-slate-200 rounded-sm  border-4'>
+              <ReactPlayer playing height='600px' width='800px' url={remoteStream} />
+            </div>
+          </>
+        }
       </div>
 
+      {isConnected &&
+        <div className='flex  gap-4'>
+          <button className='px-6 py-2 my-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-100 transition-colors bg-red-500 hover:bg-red-600 hover:text-white' onClick={endCall}>End</button>
+          <button onClick={() => setAudio(!audio)}>{audio ? <Mic  size={30} /> : <MicOff  size={30} />}</button>
+          <button onClick={() => setVideo(!video)}>{video ? <Video  size={30} /> : <VideoOff  size={30} />}</button>
+        </div>}
     </div>
-
   );
 }
