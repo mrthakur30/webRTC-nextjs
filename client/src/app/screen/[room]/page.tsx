@@ -30,7 +30,7 @@ export default function Screen(props: any) {
 
     console.log(`Screen Width: ${screenWidth}`);
 
-    if (screenWidth <= 768) {
+    if (screenWidth <= 800) {
       setIsPhone(true);
     } else {
       setIsPhone(false);
@@ -46,7 +46,7 @@ export default function Screen(props: any) {
     return () => {
       window.removeEventListener('resize', updateScreenSize);
     };
-  }, []); 
+  }, []);
 
 
 
@@ -181,27 +181,29 @@ export default function Screen(props: any) {
           <button className='px-6 py-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-950 transition-colors bg-white  hover:bg-slate-900 hover:text-white' onClick={handleCallUser}>CALL </button>
         }
       </div>}
+      <div>
+        <div className='relative md:w-screen h-full  '>
+          {
+            (myStream && remoteStream) &&
+            <>
+              <div className='flex flex-col justify-center items-center absolute  rounded-sm  md:right-20 right-0 bottom-6 '>
+                <ReactPlayer playing muted height={isPhone ? 70 : 150} width={isPhone ? 120 : 220} url={myStream} />
+              </div>
 
-      <div className='relative overflow-clip md:w-screen w-full h-full  '>
-        {
-          (myStream && remoteStream) &&
-          <>
-            <div className='flex flex-col justify-center items-center absolute  rounded-sm  md:right-20 right-0 bottom-6 '>
-              <ReactPlayer playing muted height={isPhone ?70: 150 } width={isPhone ?120 : 220 }  url={myStream} />
-            </div>
-
-            <div className='flex flex-col justify-center items-center  md:border-slate-200 rounded-sm  md:border-4'>
-              <ReactPlayer playing height={isPhone ?400: 500 } width={isPhone ?500 : 800 } url={remoteStream} />
-            </div>
-          </>
-        }
+              <div className='flex flex-col justify-center items-center  md:border-slate-200 rounded-sm  md:border-4'>
+                <ReactPlayer playing height={isPhone ? 400 : 500} width={isPhone ? 400 : 800} url={remoteStream} />
+              </div>
+            </>
+          }
+        </div>
       </div>
+
 
       {isConnected &&
         <div className='flex  gap-4'>
           <button className='px-6 py-2 my-2 bg-opacity-80 border-gray-300 border-2 rounded-3xl text-slate-100 transition-colors bg-red-500 hover:bg-red-600 hover:text-white' onClick={endCall}>End</button>
-          <button onClick={() => setAudio(!audio)}>{audio ? <Mic  size={30} /> : <MicOff  size={30} />}</button>
-          <button onClick={() => setVideo(!video)}>{video ? <Video  size={30} /> : <VideoOff  size={30} />}</button>
+          <button onClick={() => setAudio(!audio)}>{audio ? <Mic size={30} /> : <MicOff size={30} />}</button>
+          <button onClick={() => setVideo(!video)}>{video ? <Video size={30} /> : <VideoOff size={30} />}</button>
         </div>}
     </div>
   );
